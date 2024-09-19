@@ -1,6 +1,6 @@
 import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
 import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js";
-import { getUserLocation } from "./public/utils.js";
+import { getUserLocation } from "./utils.js";
 
 export function initializeAuth(app) {
     const auth = getAuth(app);

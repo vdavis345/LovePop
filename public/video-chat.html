@@ -7,34 +7,24 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-</head>
 <body>
     <div class="container">
+        <div class="matching-section">
+            <h2 class="witty-text">Where in the world is your perfect match?</h2>
+            <div class="matching-options">
+                <button class="location-toggle active" data-value="sameState">Same State</button>
+                <button class="location-toggle" data-value="sameCountry">Same Country</button>
+                <button class="location-toggle" data-value="worldwide">Worldwide</button>
+            </div>
+        </div>
         <div class="video-container">
             <video id="localVideo" autoplay muted></video>
             <video id="remoteVideo" autoplay></video>
         </div>
         <div class="controls">
             <button id="startButton">Start Chat</button>
-            <div class="location-toggle">
-                <span>Match:</span>
-                <label class="switch">
-                    <input type="checkbox" id="locationToggle">
-                    <span class="slider round"></span>
-                </label>
-                <span id="locationLabel">Same State</span>
-            </div>
             <button id="nextButton">Next</button>
         </div>
-    </div>
-<body>
-    <div class="container">
-        <div class="video-container">
-            <video id="localVideo" autoplay muted></video>
-            <video id="remoteVideo" autoplay></video>
-        </div>
-        <button id="startButton">Start Chat</button>
-        <button id="nextButton">Next</button>
     </div>
     <div class="overlay" id="balloonOverlay">
         <div id="balloon"></div>
@@ -46,9 +36,6 @@
             <span>Home</span>
         </a>
     </nav>
-    <script src="script.js"></script>
-</body>
-</html>
     <script src="script.js"></script>
 </body>
 </html>

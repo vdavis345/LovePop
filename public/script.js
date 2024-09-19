@@ -34,7 +34,34 @@ nextButton.addEventListener('click', () => {
         balloonOverlay.classList.remove('show');
     }, 500); // Hide after 500ms (duration of the pop animation)
 });
+// Existing code (keep all your current JavaScript code)
 
+// ... (your existing code here)
+
+// Add this new code for toggle functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const toggleButtons = document.querySelectorAll('.location-toggle');
+    
+    toggleButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            toggleButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            // Here you can add logic to handle the selection
+            console.log('Selected location:', this.dataset.value);
+            
+            // You might want to call a function here to update the matching preference
+            // For example:
+            // updateMatchingPreference(this.dataset.value);
+        });
+    });
+});
+
+// You can define additional functions here if needed
+// function updateMatchingPreference(preference) {
+//     // Logic to update the matching preference
+// }
+
+// ... (rest of your existing code)
 async function startVideoChat() {
     // Get media stream from the user's webcam and microphone
     localStream = await navigator.mediaDevices.getUserMedia(mediaConstraints);
