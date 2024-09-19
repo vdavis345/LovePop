@@ -1,0 +1,181 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    font-family: Arial, sans-serif;
+    background-color: #f2f1e6; /* Eggshell white */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+    position: relative;
+}
+
+.video-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 80vh; /* Increased to take up more of the screen */
+    margin-bottom: 20px; /* Add some space between videos and buttons */
+}
+
+video {
+    flex: 1;
+    margin: 0 10px;
+    background-color: black;
+    border: 4px solid #ff3b3b; /* Red border */
+    border-radius: 10px;
+    object-fit: cover;
+    max-width: calc(50% - 20px);
+    max-height: 100%;
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 18px;
+    background-color: #ff3b3b; /* Red button */
+    color: white; /* White text */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 10px;
+    z-index: 10;
+}
+
+button:hover {
+    background-color: #c82b2b; /* Darker red on hover */
+}
+
+/* Balloon pop overlay */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(242, 241, 230, 0.7); /* Eggshell white with opacity */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    visibility: hidden;
+    z-index: 1000;
+}
+
+#balloon {
+    width: 100px;
+    height: 140px;
+    background: red;
+    border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
+    position: relative;
+    transform-origin: bottom center;
+}
+
+#balloon::before {
+    content: '';
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    width: 10px;
+    height: 30px;
+    background: #ff6666;
+    border-radius: 5px;
+    transform: translateX(-50%);
+}
+
+@keyframes popAnimation {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.2); opacity: 0.8; }
+    100% { transform: scale(2); opacity: 0; }
+}
+
+.overlay.show {
+    visibility: visible;
+}
+
+.overlay.show #balloon {
+    animation: popAnimation 0.5s ease-out forwards;
+}
+/* Existing styles */
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    font-family: Arial, sans-serif;
+    background-color: #f2f1e6; /* Eggshell white */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* ... (keep all existing styles) ... */
+
+/* New landing page styles */
+.landing-page {
+    justify-content: center;
+}
+
+.landing-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: calc(100% - 60px); /* Adjust for navbar height */
+}
+
+.balloon-heart {
+    max-width: 80%;
+    max-height: 50vh;
+    object-fit: contain;
+    margin-bottom: 2rem;
+}
+
+.landing-title {
+    font-size: 2rem;
+    font-weight: bold;
+    text-align: center;
+    color: #ff3b3b; /* Red color to match buttons */
+    margin: 0;
+    padding: 0 1rem;
+}
+
+.navbar {
+    width: 100%;
+    height: 60px;
+    background-color: #ff3b3b; /* Red to match buttons */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    color: white;
+    font-size: 0.9rem;
+}
+
+.nav-item i {
+    font-size: 1.5rem;
+    margin-bottom: 0.25rem;
+}
+
+/* Adjust existing container for video chat page */
+.container {
+    height: calc(100% - 60px); /* Adjust for navbar height */
+}

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pop The Balloon Or Find Love</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="landing-page">
+    <main class="landing-content">
+        <img src="balloon-heart.png" alt="Balloon Heart" class="balloon-heart">
+        <h1 class="landing-title">Pop The Balloon Or Find Love</h1>
+        <button id="signInButton" class="sign-in-button">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google logo" class="google-icon">
+            Sign in with Google
+        </button>
+    </main>
+    <nav class="navbar">
+        <a href="video-chat.html" class="nav-item">
+            <i class="fas fa-video"></i>
+            <span>Video Chat</span>
+        </a>
+    </nav>
+
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-analytics.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
+        import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDb26hIjEVQF1eK5QIM4ToiD2EQHKZZXbI",
+            authDomain: "lovepop-382f9.firebaseapp.com",
+            projectId: "lovepop-382f9",
+            storageBucket: "lovepop-382f9.appspot.com",
+            messagingSenderId: "355578771131",
+            appId: "1:355578771131:web:0466db3dc40285473edb9e",
+            measurementId: "G-VB84E590HQ"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const auth = getAuth(app);
+        const database = getDatabase(app);
+
+        // Google Sign-In
+        document.getElementById('signInButton').addEventListener('click', () => {
+            const provider = new GoogleAuthProvider();
+            signInWithPopup(auth, provider)
+                .then((result) => {
+                    const user = result.user;
+                    console.log('User signed in:', user);
+                    storeUserData(user);
+                    window.location.href = 'video-chat.html';
+                }).catch((error) => {
+                    console.error('Sign-in error:', error.code, error.message);
+                });
+        });
+
+        function storeUserData(user) {
+            set(ref(database, 'users/' + user.uid), {
+                displayName: user.displayName,
+                email: user.email,
+                photoURL: user.photoURL,
+                lastSignInTime: new Date().toISOString()
+            });
+        }
+
+        // Listen for auth state changes
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                console.log('User is signed in:', user);
+                // Update UI or redirect as needed
+            } else {
+                console.log('User is signed out');
+                // Update UI as needed
+            }
+        });
+    </script>
+</body>
+</html>
