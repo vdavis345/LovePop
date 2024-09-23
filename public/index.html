@@ -15,20 +15,22 @@
             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google logo" class="google-icon">
             Sign in with Google
         </button>
+        <p id="locationMessage" style="display: none; color: red; margin-top: 10px;"></p>
+        <p id="debugMessage" style="color: blue; margin-top: 10px;"></p>
     </main>
     <nav class="navbar">
-        <a href="video-chat.html" class="nav-item">
+        <a href="#" id="videoChatButton" class="nav-item">
             <i class="fas fa-video"></i>
             <span>Video Chat</span>
         </a>
     </nav>
-
     <script type="module">
         // Import the functions you need from the SDKs you need
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-analytics.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
-        import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
+        import { getUserLocation } from "./utils.js";
 
         // Your web app's Firebase configuration
         const firebaseConfig = {
@@ -45,41 +47,125 @@
         const app = initializeApp(firebaseConfig);
         const analytics = getAnalytics(app);
         const auth = getAuth(app);
-        const database = getDatabase(app);
+        const db = getFirestore(app);
+
+        function debugLog(message) {
+            console.log(message);
+            document.getElementById('debugMessage').textContent = message;
+        }
 
         // Google Sign-In
-        document.getElementById('signInButton').addEventListener('click', () => {
-            const provider = new GoogleAuthProvider();
-            signInWithPopup(auth, provider)
-                .then((result) => {
-                    const user = result.user;
-                    console.log('User signed in:', user);
-                    storeUserData(user);
-                    window.location.href = 'video-chat.html';
-                }).catch((error) => {
-                    console.error('Sign-in error:', error.code, error.message);
-                });
-        });
+        document.getElementById('signInButton').addEventListener('click', signIn);
 
-        function storeUserData(user) {
-            set(ref(database, 'users/' + user.uid), {
+        async function signIn() {
+            debugLog('Signing in...');
+            const provider = new GoogleAuthProvider();
+            try {
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
+                debugLog('User signed in: ' + user.displayName);
+                await requestLocationAndStoreUser(user);
+            } catch (error) {
+                console.error('Sign-in error:', error.code, error.message);
+                debugLog('Sign-in error: ' + error.message);
+            }
+        }
+
+        async function requestLocationAndStoreUser(user) {
+            debugLog('Requesting location...');
+            try {
+                const location = await getUserLocation();
+                if (location) {
+                    await storeUserData(user, location);
+                    debugLog('Location stored successfully');
+                    return true;
+                } else {
+                    throw new Error('Location not provided');
+                }
+            } catch (error) {
+                console.error('Error getting location:', error);
+                document.getElementById('locationMessage').textContent = 'Please allow location access to continue.';
+                document.getElementById('locationMessage').style.display = 'block';
+                debugLog('Location error: ' + error.message);
+                return false;
+            }
+        }
+
+        async function storeUserData(user, location) {
+            debugLog('Storing user data...');
+            await setDoc(doc(db, 'users', user.uid), {
                 displayName: user.displayName,
                 email: user.email,
                 photoURL: user.photoURL,
-                lastSignInTime: new Date().toISOString()
-            });
+                lastSignInTime: new Date().toISOString(),
+                location: location,
+                matchPreference: 'worldwide' // default preference
+            }, { merge: true });
         }
 
         // Listen for auth state changes
         auth.onAuthStateChanged((user) => {
             if (user) {
-                console.log('User is signed in:', user);
-                // Update UI or redirect as needed
+                debugLog('User is signed in: ' + user.displayName);
+                checkUserLocation(user);
             } else {
-                console.log('User is signed out');
-                // Update UI as needed
+                debugLog('User is signed out');
             }
         });
+
+        async function checkUserLocation(user) {
+            debugLog('Checking user location...');
+            const userDoc = await getDoc(doc(db, 'users', user.uid));
+            const userData = userDoc.data();
+            if (!userData || !userData.location) {
+                document.getElementById('locationMessage').textContent = 'Please allow location access to continue.';
+                document.getElementById('locationMessage').style.display = 'block';
+                debugLog('User location not found');
+                return false;
+            } else {
+                debugLog('User location found');
+                return true;
+            }
+        }
+
+        // Video Chat Button Click Handler
+        document.getElementById('videoChatButton').addEventListener('click', async (e) => {
+            e.preventDefault(); // Prevent default link behavior
+            debugLog('Video chat button clicked');
+            const user = auth.currentUser;
+            if (user) {
+                debugLog('User is signed in, checking location...');
+                const hasLocation = await checkUserLocation(user);
+                if (hasLocation) {
+                    debugLog('User has location, redirecting to video chat...');
+                    window.location.href = 'video-chat.html';
+                } else {
+                    debugLog('User doesn\'t have location, requesting...');
+                    const locationStored = await requestLocationAndStoreUser(user);
+                    if (locationStored) {
+                        debugLog('Location stored, redirecting to video chat...');
+                        window.location.href = 'video-chat.html';
+                    }
+                }
+            } else {
+                debugLog('User is not signed in, prompting to sign in...');
+                const willSignIn = confirm('You need to sign in to access the video chat. Would you like to sign in now?');
+                if (willSignIn) {
+                    await signIn();
+                    // After sign-in, check location and redirect
+                    if (auth.currentUser) {
+                        const hasLocation = await checkUserLocation(auth.currentUser);
+                        if (hasLocation) {
+                            debugLog('User has location after sign-in, redirecting to video chat...');
+                            window.location.href = 'video-chat.html';
+                        }
+                    }
+                }
+            }
+        });
+
+        // Debug: Log when the script has finished loading
+        debugLog('Script loaded successfully');
     </script>
 </body>
 </html>
