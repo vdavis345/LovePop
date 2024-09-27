@@ -1,42 +1,65 @@
-import { getDatabase, ref, get, query, orderByChild } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js";
+import { getFirestore, collection, doc, getDoc, query, where, limit, getDocs } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
 
-const db = getDatabase();
+const db = getFirestore();
 
 export async function findMatch(userId, preference) {
-  const userRef = ref(db, `users/${userId}`);
-  const userSnapshot = await get(userRef);
-  const user = userSnapshot.val();
+    // Get the current user's data
+    const userRef = doc(db, "users", userId);
+    const userSnap = await getDoc(userRef);
 
-  let matchQuery;
-  switch(preference) {
-    case 'inRadius':
-      matchQuery = query(ref(db, 'users'), orderByChild('location/latitude'));
-      // You'd implement a more sophisticated nearby search here
-      break;
-    case 'outOfState':
-      // Implement out-of-state logic
-      matchQuery = query(ref(db, 'users'));
-      break;
-    case 'worldwide':
-    default:
-      matchQuery = query(ref(db, 'users'));
-      break;
-  }
-
-  const matchSnapshot = await get(matchQuery);
-  const potentialMatches = [];
-
-  matchSnapshot.forEach(childSnapshot => {
-    const potentialMatch = childSnapshot.val();
-    if (childSnapshot.key !== userId && potentialMatch.matchPreference === preference) {
-      potentialMatches.push({ id: childSnapshot.key, ...potentialMatch });
+    if (!userSnap.exists()) {
+        console.error("User not found");
+        return null;
     }
-  });
 
-  if (potentialMatches.length > 0) {
-    const randomIndex = Math.floor(Math.random() * potentialMatches.length);
-    return potentialMatches[randomIndex];
-  }
+    const user = userSnap.data();
 
-  return null;
+    // Build the query based on preference
+    let matchQuery;
+    const usersRef = collection(db, "users");
+
+    switch(preference) {
+        case 'state':
+            matchQuery = query(usersRef, 
+                where("location.state", "==", user.location.state),
+                where("matchPreference", "in", ["state", "worldwide"]),
+                limit(50)
+            );
+            break;
+        case 'outOfState':
+            // This is trickier in Firestore and might require a different approach
+            matchQuery = query(usersRef,
+                where("matchPreference", "in", ["outOfState", "worldwide"]),
+                limit(50)
+            );
+            break;
+        case 'worldwide':
+        default:
+            matchQuery = query(usersRef, 
+                where("matchPreference", "==", "worldwide"),
+                limit(50)
+            );
+            break;
+    }
+
+    // Execute the query
+    const querySnapshot = await getDocs(matchQuery);
+    const potentialMatches = [];
+
+    querySnapshot.forEach((doc) => {
+        if (doc.id !== userId) {
+            const matchData = doc.data();
+            if (preference === 'outOfState' && matchData.location.state === user.location.state) {
+                return; // Skip if it's the same state for 'outOfState' preference
+            }
+            potentialMatches.push({ id: doc.id, ...matchData });
+        }
+    });
+
+    if (potentialMatches.length > 0) {
+        const randomIndex = Math.floor(Math.random() * potentialMatches.length);
+        return potentialMatches[randomIndex];
+    }
+
+    return null;
 }
